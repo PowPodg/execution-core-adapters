@@ -24,7 +24,7 @@ The required model is centered on a universal `Task<T, StartPolicy>` abstraction
 > <a href="https://github.com/facebook/folly/tree/main/folly/coro">Folly</a>,
 > <a href="https://github.com/facebookexperimental/libunifex/tree/main">libunifex</a>,
 > and <a href="https://github.com/boostorg/asio/tree/develop/include/boost/asio">Boost.Asio</a>.
-> <u> implementations do not fully match the author's requirements for this project</u>, because the required model is:
+> <ins>These implementations do not fully match the author's requirements</ins>, because the required model is:
 > a compact C++20 coroutine core centered on a universal
 > <code>Task&lt;T, StartPolicy&gt;</code> abstraction, where result type, start policy,
 > and coroutine-state ownership are handled by one task abstraction;
