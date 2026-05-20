@@ -1,6 +1,6 @@
-# execution_core and execution_adapters API Reference
+# execution_core and execution_adapters
 
-> Status: documentation-only snapshot.  
+> #### Status: documentation-only snapshot.  
 > The source code for `execution_core` and `execution_adapters`
 > is not included in this repository yet.
 >
@@ -19,7 +19,20 @@
 
 The required model is centered on a universal `Task<T, StartPolicy>` abstraction: result type, start policy, and ownership of the coroutine state are handled by one task abstraction. The core also provides an explicit `TaskRegistry`, a formal lifecycle protocol, strict scheduler/adapter separation, continuation validation by task identity, generation, and coroutine-handle identity, and controlled return of externally completed work back into the scheduler.
 
-<sub>There are also similar coroutine return/awaitable types in <a href="https://github.com/facebook/folly/tree/main/folly/coro">Folly</a>, <a href="https://github.com/facebookexperimental/libunifex/tree/main">libunifex</a>, and <a href="https://github.com/boostorg/asio/tree/develop/include/boost/asio">Boost.Asio</a>. These implementations do not fully match the author's requirements because the required model is: a compact C++20 coroutine core centered on a universal <code>Task&lt;T, StartPolicy&gt;</code> abstraction, where result type, start policy, and coroutine-state ownership are handled by one task abstraction; an explicit <code>TaskRegistry</code>; a formal lifecycle protocol; strict scheduler/adapter separation; continuation validation by task identity, generation, and coroutine-handle identity; and controlled return of externally completed work back into the scheduler.</sub>
+
+> There are also similar coroutine return/awaitable types in
+> <a href="https://github.com/facebook/folly/tree/main/folly/coro">Folly</a>,
+> <a href="https://github.com/facebookexperimental/libunifex/tree/main">libunifex</a>,
+> and <a href="https://github.com/boostorg/asio/tree/develop/include/boost/asio">Boost.Asio</a>.
+> <u> implementations do not fully match the author's requirements for this project</u>, because the required model is:
+> a compact C++20 coroutine core centered on a universal
+> <code>Task&lt;T, StartPolicy&gt;</code> abstraction, where result type, start policy,
+> and coroutine-state ownership are handled by one task abstraction;
+> an explicit <code>TaskRegistry</code>;
+> a formal lifecycle protocol;
+> strict scheduler/adapter separation;
+> continuation validation by task identity, generation, and coroutine-handle identity;
+> and controlled return of externally completed work back into the scheduler.
 
 `execution_core` defines task ownership, coroutine state tracking, continuation validation, scheduler interaction, cleanup, shutdown, and boundary exception handling.
 
@@ -27,6 +40,7 @@ The required model is centered on a universal `Task<T, StartPolicy>` abstraction
 
 The implementation is intended to be built as C++20. The internal source tree uses `target_compile_features(... cxx_std_20)` in the module CMake configuration.
 
+## API Reference
 ## Table of contents
 
 <ol>
@@ -95,7 +109,6 @@ The implementation is intended to be built as C++20. The internal source tree us
 <li><a href="#10-shutdown-and-cleanup">Shutdown and cleanup</a></li>
 <li><a href="#11-threading-model">Threading model</a></li>
 <li><a href="#12-api-usage-examples">API usage examples</a></li>
-<li><a href="#13-current-c23-relevance">Current C++23 relevance</a></li>
 </ol>
 
 ---
@@ -1805,28 +1818,4 @@ auto value = co_await execution_adapters::run_in_context_background(
 
 `WorkerContext` belongs to worker execution. It does not define the coroutine resumption context.
 
----
 
-## 13. Current C++23 relevance
-
-The current module contracts are satisfied by C++20 facilities: `<coroutine>`, `std::thread`, `std::mutex`, `std::condition_variable`, `std::atomic`, and `std::function`.
-
-C++23 does not provide a standard replacement for this architecture:
-
-```text
-- no standard thread_pool replacing IExecutor / ThreadPoolExecutor;
-- no standard scheduler replacing execution_core::Scheduler;
-- no standard TaskRegistry / lifecycle protocol;
-- no standard wait-set / continuation-validation protocol;
-- no standard Qt/event-loop return bridge.
-```
-
-Possible C++23-only changes are conditional, not required:
-
-| C++23 facility | Applies only if this new requirement exists |
-|---|---|
-| `std::move_only_function` | Executor jobs must support move-only callable objects. |
-| `std::expected` | The API intentionally replaces exception-based operation results with explicit value/error results. |
-| `std::generator` | Data is produced as synchronous pull-style ranges rather than through background continuation return. |
-
-For the current `execution_core` / `execution_adapters` protocol, C++23 is not required.
