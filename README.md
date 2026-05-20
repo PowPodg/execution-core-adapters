@@ -8,7 +8,7 @@
 > This repository is currently used to publish the API and architecture
 > documentation first.
 >
-> API feedback is welcome. Suggestions regarding the API structure,
+> <ins>API feedback is welcome.</ins> Suggestions regarding the API structure,
 > ownership model, lifecycle protocol, scheduler boundaries, adapter
 > boundaries, and public naming are appreciated before the source package
 > is released.
