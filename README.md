@@ -1352,6 +1352,10 @@ Contract:
 - `PostContext::alive()` means either there is no lifetime object or `lifetime->alive()` is true.
 - `ILifetime::alive()` is used as the runtime liveness gate in current posting semantics.
 - `IDestructionSubscription` is part of the public adapter API.
+- `ILifetime::subscribe(...)` registers a callback associated with the lifetime object.
+- The returned `std::shared_ptr<IDestructionSubscription>` is the subscription ownership token.
+- The callback registration remains active while the returned subscription object remains alive, unless the concrete lifetime implementation defines stricter semantics.
+- Framework-specific adapters may use `subscribe(...)` to bind cleanup, cancellation, or notification logic to object destruction or lifetime shutdown.
 - Current `post_if_alive(...)` semantics depend on `alive()` and executor posting, not on automatic subscription-based cancellation.
 
 ### 7.9 SingleContinuationWaitSet
