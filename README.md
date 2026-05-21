@@ -1490,7 +1490,6 @@ Type rules:
 
 Execution contract:
 
-```text
 - blocking callable executes on an IExecutor worker thread;
 - coroutine continuation is not resumed by the worker directly;
 - worker stores result/exception and returns the stored Continuation to the scheduler/runtime path;
@@ -1499,7 +1498,6 @@ Execution contract:
   into the wait-set, the exception is stored in the shared state, the stored
   continuation is scheduled back through the runtime path, and `await_resume()`
   rethrows the exception.
-```
 
 <details>
 <summary>await_suspend flow</summary>
