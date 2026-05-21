@@ -1232,6 +1232,8 @@ Contract:
 - `post(...)` returns without enqueueing when shutdown has started.
 - Destructor requests stop, notifies workers, and joins joinable worker threads.
 - Destructor may block until already-running jobs finish.
+- Jobs posted directly to `ThreadPoolExecutor` must not let exceptions escape
+  from the job function. Escaping exceptions are not caught by the worker loop.
 
 ### 7.3 make_thread_pool_executor
 
@@ -1311,6 +1313,8 @@ Contract:
 - If the context factory throws, the exception is stored in `context.initialization_exception`.
 - The destructor requests stop, notifies workers, and joins joinable worker threads.
 - The destructor may block until already-running jobs finish.
+- Jobs posted directly to `ContextThreadPoolExecutor` must not let exceptions
+  escape from the job function. Escaping exceptions are not caught by the worker loop.
 
 ### 7.7 make_context_thread_pool_executor
 
@@ -1365,7 +1369,7 @@ Contract:
 
 - `PostContext::valid()` means `executor != nullptr`.
 - `PostContext::alive()` means either there is no lifetime object or `lifetime->alive()` is true.
-- `ILifetime::alive()` is used as the `PostContext` lifetime gate in current posting semantics..
+- `ILifetime::alive()` is used as the `PostContext` lifetime gate in current posting semantics.
 - `IDestructionSubscription` is part of the public adapter API.
 - `ILifetime::subscribe(...)` registers a callback associated with the lifetime object.
 - The returned `std::shared_ptr<IDestructionSubscription>` is the subscription ownership token.
@@ -1458,6 +1462,8 @@ Contract:
 - If `context.valid()` is false, the function returns immediately.
 - Otherwise it posts a wrapper into `context.executor`.
 - The wrapper calls `fn()` only if `context.alive()` is true at execution time.
+- Exceptions thrown by `context.executor->post(...)` are not caught by
+  `post_if_alive(...)` and propagate to the caller.
 
 ### 7.12 run_in_background
 
@@ -1489,6 +1495,10 @@ Execution contract:
 - coroutine continuation is not resumed by the worker directly;
 - worker stores result/exception and returns the stored Continuation to the scheduler/runtime path;
 - actual coroutine resume occurs only through Scheduler::run_ready() after registry validation.
+- If `background_executor->post(...)` throws after the coroutine was suspended
+  into the wait-set, the exception is stored in the shared state, the stored
+  continuation is scheduled back through the runtime path, and `await_resume()`
+  rethrows the exception.
 ```
 
 <details>
@@ -1558,6 +1568,17 @@ run_in_context_background(...)
   -> callable receives WorkerContext&
   -> WorkerContext belongs to worker execution, not coroutine resumption context
 ```
+
+Execution contract:
+
+- context callable executes on an `IContextExecutor` worker thread;
+- coroutine continuation is not resumed by the worker directly;
+- worker stores result/exception and returns the stored `Continuation` to the scheduler/runtime path;
+- actual coroutine resume occurs only through `Scheduler::run_ready()` after registry validation;
+- if `background_executor->post(...)` throws after the coroutine was suspended
+  into the wait-set, the exception is stored in the shared state, the stored
+  continuation is scheduled back through the runtime path, and `await_resume()`
+  rethrows the exception.
 
 <details>
 <summary>await_suspend flow</summary>
