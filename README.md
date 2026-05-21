@@ -444,8 +444,7 @@ enum class CoroutineState {
     Waiting,
     FinalSuspended,
     Cancelled,
-    Cleaning,
-    Destroyed
+    Cleaning
 };
 ```
 
@@ -460,7 +459,6 @@ enum class CoroutineState {
 | `FinalSuspended` | The coroutine has reached final suspend; cleanup may collect exception channels and destroy it. |
 | `Cancelled` | Registry has cancelled a non-running task before cleanup. |
 | `Cleaning` | Registry has started cleanup and is removing the task entry. |
-| `Destroyed` | Declared enum value. It is not a required stored state in the erase-on-cleanup model. |
 
 ### 6.3 Continuation
 
@@ -666,6 +664,20 @@ An empty or moved-from Task is not treated as a completed coroutine.
 Scheduler and registry-controlled resume paths call coroutine_handle::done()
 only after TaskEntry lookup, record existence check, generation validation,
 state validation, non-null handle validation, and handle-identity validation.
+
+#### Result access contract
+
+`result()` is available only for non-void `Task<T, ...>`.
+
+Precondition: the coroutine has completed and the `Task` still owns the
+coroutine state.
+
+If the promise stores an exception, `result()` rethrows that exception.
+If no result value was produced, calling `result()` violates the Task result
+contract.
+
+For registry-managed tasks, result access must be performed only through a
+protocol path that guarantees the coroutine is final-suspended and still owned.
 
 #### Destruction contract
 
@@ -1011,9 +1023,12 @@ Scheduler::schedule(Continuation) validates TaskEntry, generation, and state thr
 TaskRegistry::schedule_ready(...), and only then publishes the continuation to the
 ready queue.
 
-State transition to Ready and ready-queue publication are one protocol operation.
-It is forbidden to leave state == Ready if the continuation was not actually
-published, unless the fixed policy is process termination.
+After `schedule_ready(...)` succeeds, the continuation must be published into
+the ready queue.
+
+If ready-queue publication fails after the registry state was changed to
+`Ready`, `Scheduler` calls `std::terminate()` rather than leaving a task in
+`Ready` state without a queued continuation.
 ```
 
 <details>
@@ -1350,7 +1365,7 @@ Contract:
 
 - `PostContext::valid()` means `executor != nullptr`.
 - `PostContext::alive()` means either there is no lifetime object or `lifetime->alive()` is true.
-- `ILifetime::alive()` is used as the runtime liveness gate in current posting semantics.
+- `ILifetime::alive()` is used as the `PostContext` lifetime gate in current posting semantics..
 - `IDestructionSubscription` is part of the public adapter API.
 - `ILifetime::subscribe(...)` registers a callback associated with the lifetime object.
 - The returned `std::shared_ptr<IDestructionSubscription>` is the subscription ownership token.
