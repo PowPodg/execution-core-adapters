@@ -109,6 +109,7 @@ The implementation is intended to be built as C++20. The internal source tree us
 <li><a href="#10-shutdown-and-cleanup">Shutdown and cleanup</a></li>
 <li><a href="#11-threading-model">Threading model</a></li>
 <li><a href="#12-api-usage-examples">API usage examples</a></li>
+<li><a href="#license">License</a></li>
 </ol>
 
 ---
@@ -1862,5 +1863,11 @@ auto value = co_await execution_adapters::run_in_context_background(
 </details>
 
 `WorkerContext` belongs to worker execution. It does not define the coroutine resumption context.
+
+## License
+
+Copyright 2026 PowPodg (Oleg Ivanov).
+
+This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE).
 
 
