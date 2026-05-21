@@ -609,7 +609,6 @@ public:
     ~Task();
 
     void start();
-    bool done() const noexcept;
     void rethrow_if_exception();
     explicit operator bool() const noexcept;
 
@@ -654,11 +653,19 @@ TaskRegistry::spawn(...)
 
 </details>
 
-#### done() contract
+#### Completion observation contract
 
-`Task::done()` is a direct owner-side observer. It does not perform registry validation and must be used only under the standard `coroutine_handle::done()` precondition that the handle refers to a suspended coroutine.
+Task does not expose a public completion observer.
 
-Scheduler and registry-controlled resume paths call `coroutine_handle::done()` only after `TaskEntry` lookup, record existence check, generation validation, state validation, non-null handle validation, and handle-identity validation.
+Completion observation is an internal registry-controlled operation.
+TaskRecord<T>::done() calls an internal Task observer only after the registry
+has validated ownership, generation, state, non-null handle, and handle identity.
+
+An empty or moved-from Task is not treated as a completed coroutine.
+
+Scheduler and registry-controlled resume paths call coroutine_handle::done()
+only after TaskEntry lookup, record existence check, generation validation,
+state validation, non-null handle validation, and handle-identity validation.
 
 #### Destruction contract
 
