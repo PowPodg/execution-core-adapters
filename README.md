@@ -1168,7 +1168,6 @@ public:
     virtual void request_run_ready() noexcept = 0;
 };
 
-using ExecutionCoreRuntimePtr = std::shared_ptr<IExecutionCoreRuntime>;
 using ExecutionCoreRuntimeWeakPtr = std::weak_ptr<IExecutionCoreRuntime>;
 ```
 
