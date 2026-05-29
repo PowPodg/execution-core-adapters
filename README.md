@@ -1,17 +1,8 @@
 # execution_core and execution_adapters
 
-> #### Status: documentation-only snapshot.  
-> The source code for `execution_core` and `execution_adapters`
-> is not included in this repository yet.
->
-> Reason: the implementation is being prepared for public release.
-> This repository is currently used to publish the API and architecture
-> documentation first.
->
 > <ins>API feedback is welcome.</ins> Suggestions regarding the API structure,
 > ownership model, lifecycle protocol, scheduler boundaries, adapter
-> boundaries, and public naming are appreciated before the source package
-> is released.
+> boundaries, and public naming are appreciated.
 
 ## Purpose
 
